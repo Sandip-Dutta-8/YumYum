@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import MobileNav from "./MobileNav";
 import MainNav from "./MainNav";
+import { ModeToggle } from "./mode-toggle";
 
 const Header = () => {
     return (
@@ -12,11 +13,14 @@ const Header = () => {
                 >
                     YumYum
                 </Link>
-                <div className="md:hidden">
-                    <MobileNav />
-                </div>
-                <div className="hidden md:block">
-                    <MainNav />
+                <div className="flex items-center gap-3 lg:gap-8">
+                    <div><ModeToggle /></div>
+                    <div className="md:hidden">
+                        <MobileNav />
+                    </div>
+                    <div className="hidden md:block">
+                        <MainNav />
+                    </div>
                 </div>
             </div>
         </div>
