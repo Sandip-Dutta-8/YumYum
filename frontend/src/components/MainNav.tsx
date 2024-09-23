@@ -1,8 +1,16 @@
-import React from 'react'
+import { Button } from './ui/button'
 
 const MainNav = () => {
   return (
-    <div>MainNav</div>
+    <div>
+      <Button
+        className="font-bold bg-orange-500"
+        onClick={async () => {}}
+      >
+        Log In
+      </Button>
+
+    </div>
   )
 }
 
