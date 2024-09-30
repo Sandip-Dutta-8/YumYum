@@ -14,10 +14,6 @@ app.use(cors());
 
 app.use("/api/my/user", myUserRoute);
 
-app.get('/test', (req: Request, res: Response) => {
-    res.json({ msg: "Testing route" });
-})
-
 app.listen(7000, () => {
     console.log('backend started on port 7000');
 })
