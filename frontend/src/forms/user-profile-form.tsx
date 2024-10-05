@@ -42,7 +42,7 @@ const UserProfileForm = ({
     auth0Id, // Destructure auth0Id
     currentUser,
     title = "User Profile",
-    buttonText = "Submit",
+    buttonText = "Update",
 }: Props) => {
     const form = useForm<UserFormData>({
         resolver: zodResolver(formSchema),
@@ -59,7 +59,7 @@ const UserProfileForm = ({
                 onSubmit={form.handleSubmit((data) => {
                     onSave(data); // Call onSave with form data
                 })}
-                className="space-y-4 bg-gray-50 rounded-lg p-6 md:p-10 lg:mx-10"
+                className="space-y-4 bg-slate-50 dark:bg-[#020817] rounded-lg p-6 md:p-10 lg:mx-10"
             >
                 <div>
                     <h2 className="text-2xl font-bold">{title}</h2>
@@ -75,7 +75,7 @@ const UserProfileForm = ({
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input {...field} disabled className="bg-white" />
+                                <Input {...field} disabled />
                             </FormControl>
                         </FormItem>
                     )}
@@ -88,7 +88,7 @@ const UserProfileForm = ({
                         <FormItem>
                             <FormLabel>Name</FormLabel>
                             <FormControl>
-                                <Input {...field} className="bg-white" />
+                                <Input {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -103,7 +103,7 @@ const UserProfileForm = ({
                             <FormItem className="flex-1">
                                 <FormLabel>Address Line 1</FormLabel>
                                 <FormControl>
-                                    <Input {...field} className="bg-white" />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -116,7 +116,7 @@ const UserProfileForm = ({
                             <FormItem className="flex-1">
                                 <FormLabel>City</FormLabel>
                                 <FormControl>
-                                    <Input {...field} className="bg-white" />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -129,7 +129,7 @@ const UserProfileForm = ({
                             <FormItem className="flex-1">
                                 <FormLabel>Country</FormLabel>
                                 <FormControl>
-                                    <Input {...field} className="bg-white" />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

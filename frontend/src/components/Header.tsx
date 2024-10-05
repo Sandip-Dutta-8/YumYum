@@ -5,7 +5,7 @@ import { ModeToggle } from "./mode-toggle";
 
 const Header = () => {
     return (
-        <div className="border-b-2 border-b-orange-500 py-6 px-8 shadow-md shadow-white">
+        <div className="border-b-2 border-b-orange-500 py-6 px-8">
             <div className="container mx-auto flex justify-between items-center">
                 <Link
                     to="/"

@@ -66,7 +66,7 @@ const SearchBar = ({ onSubmit, onReset, placeHolder, searchQuery }: Props) => {
                             <FormControl>
                                 <Input
                                     {...field}
-                                    className="border-none shadow-none text-xl focus-visible:ring-0 text-black"
+                                    className="border-none shadow-none text-xl focus-visible:ring-0"
                                     placeholder={placeHolder}
                                 />
                             </FormControl>
@@ -74,16 +74,16 @@ const SearchBar = ({ onSubmit, onReset, placeHolder, searchQuery }: Props) => {
                     )}
                 />
 
-                <Button
+                <span
                     onClick={handleReset}
-                    type="button"
-                    variant="ghost"
-                    className="rounded-full text-black"
+                    className="mr-3 cursor-pointer"
                 >
-                    <X />
-                </Button>
+                    <X strokeWidth={2.5}
+                        size={30}
+                        className="ml-1 text-orange-500 hidden md:block" />
+                </span>
                 <Button type="submit" className="rounded-full font-bold bg-orange-500">
-                    <Search/>
+                    <Search />
                 </Button>
             </form>
         </Form>
