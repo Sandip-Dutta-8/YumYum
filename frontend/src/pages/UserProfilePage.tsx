@@ -1,6 +1,7 @@
 import { useGetMyUser, useUpdateMyUser } from "@/api/MyUserApi";
 import UserProfileForm from "@/forms/user-profile-form";
 import { useAuth0 } from "@auth0/auth0-react";
+import ReactLoading from 'react-loading';
 
 
 const UserProfilePage = () => {
@@ -9,7 +10,7 @@ const UserProfilePage = () => {
   const { user, isLoading: isUserLoading } = useAuth0();
 
   if (isGetLoading) {
-    return <span>Loading...</span>;
+    return <span className="font-bold text-2xl">Loading...</span>;
   }
 
   if (!currentUser) {
