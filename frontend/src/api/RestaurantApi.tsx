@@ -44,20 +44,24 @@ export const useSearchRestaurants = (
         );
 
         if (!response.ok) {
-            throw new Error("Failed to get restaurant");
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to get restaurant");
         }
 
         return response.json();
     };
 
-    const { data: results, isLoading } = useQuery(
-        ["searchRestaurants", searchState],
+    const { data: results, isLoading, error } = useQuery(
+        ["searchRestaurants", searchState, city],
         createSearchRequest,
-        { enabled: !!city }
+        {
+            enabled: !!city, // Ensure the query runs only if a city is provided
+            staleTime: 0,    // Fresh data on every new search
+            cacheTime: 0,    // Clear cache immediately after query becomes stale
+            retry: false,    // Avoid retrying in case of failure
+        }
     );
 
-    return {
-        results,
-        isLoading,
-    };
+    return { results, isLoading, error };
 };
+

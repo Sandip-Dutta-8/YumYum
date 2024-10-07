@@ -26,8 +26,9 @@ const SearchPage = () => {
 
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-    const { results, isLoading } = useSearchRestaurants(searchState, city);
+    const { results, isLoading, error } = useSearchRestaurants(searchState, city);
 
+    // Sorting and Pagination helpers
     const setSortOption = (sortOption: string) => {
         setSearchState((prevState) => ({
             ...prevState,
@@ -67,12 +68,30 @@ const SearchPage = () => {
         }));
     };
 
+    // Handle loading, error, and no results
     if (isLoading) {
-        <span className="font-bold text-2xl">Loading ...</span>;
+        return (
+            <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">
+                Loading...
+            </span>
+        );
+    }
+
+    if (error) {
+        const errorMessage = (error as Error).message || "No results found";  // Fallback to a default message
+        return (
+            <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">
+                {errorMessage}
+            </span>
+        );
     }
 
     if (!results?.data || !city) {
-        return <span className="font-bold text-2xl">No results found</span>;
+        return (
+            <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">
+                No results found
+            </span>
+        );
     }
 
     return (
@@ -102,9 +121,10 @@ const SearchPage = () => {
                     />
                 </div>
 
-                {results.data.map((restaurant) => (
-                    <SearchResultCard restaurant={restaurant} />
+                {results.data.map((restaurant, index) => (
+                    <SearchResultCard restaurant={restaurant} key={index} />
                 ))}
+
                 <PaginationSelector
                     page={results.pagination.page}
                     pages={results.pagination.pages}
@@ -116,3 +136,4 @@ const SearchPage = () => {
 };
 
 export default SearchPage;
+

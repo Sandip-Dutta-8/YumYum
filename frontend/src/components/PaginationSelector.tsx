@@ -31,8 +31,8 @@ import {
             </PaginationItem>
           )}
   
-          {pageNumbers.map((number) => (
-            <PaginationItem>
+          {pageNumbers.map((number, index) => (
+            <PaginationItem key={index}>
               <PaginationLink
                 href="#"
                 onClick={() => onPageChange(number)}
