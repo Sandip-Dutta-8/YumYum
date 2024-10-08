@@ -8,7 +8,7 @@ const ManageRestaurantPage = () => {
     const { updateRestaurant, isLoading: isUpdateLoading } = useUpdateMyRestaurant();
 
     if(isLoading){
-        return <span className="font-bold text-2xl">Loading...</span>;
+        return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Loading...</span>;
     }
 
     const isExisting = !!restaurant;

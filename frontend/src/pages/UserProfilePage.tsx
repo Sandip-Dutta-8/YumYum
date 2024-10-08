@@ -1,8 +1,6 @@
 import { useGetMyUser, useUpdateMyUser } from "@/api/MyUserApi";
 import UserProfileForm from "@/forms/user-profile-form";
 import { useAuth0 } from "@auth0/auth0-react";
-import ReactLoading from 'react-loading';
-
 
 const UserProfilePage = () => {
   const { currentUser, isLoading: isGetLoading } = useGetMyUser();
@@ -10,15 +8,15 @@ const UserProfilePage = () => {
   const { user, isLoading: isUserLoading } = useAuth0();
 
   if (isGetLoading) {
-    return <span className="font-bold text-2xl">Loading...</span>;
+    return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Loading...</span>;
   }
 
   if (!currentUser) {
-    return <span>Unable to load user profile</span>;
+    return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Unable to load user profile</span>;
   }
 
   if (isUserLoading) {
-    return <span>Loading user profile...</span>;
+    return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Loading user profile...</span>;
   }
 
   // If the user is not authenticated, you can handle it here
