@@ -26,53 +26,49 @@ const createCheckoutSession = async (req: Request, res: Response) => {
     try {
         const checkoutSessionRequest: CheckoutSessionRequest = req.body;
 
-        const restaurant = await Restaurant.findById(
-            checkoutSessionRequest.restaurantId
-        );
-
+        const restaurant = await Restaurant.findById(checkoutSessionRequest.restaurantId);
         if (!restaurant) {
-            throw new Error("Restaurant not found");
+            console.log("Restaurant not found:", checkoutSessionRequest.restaurantId);
+            return res.status(404).json({ message: "Restaurant not found" });
         }
 
-        // const newOrder = new Order({
-        //     restaurant: restaurant,
-        //     user: req.userId,
-        //     status: "placed",
-        //     deliveryDetails: checkoutSessionRequest.deliveryDetails,
-        //     cartItems: checkoutSessionRequest.cartItems,
-        //     createdAt: new Date(),
-        // });
+        const lineItems = createLineItems(checkoutSessionRequest, restaurant.menuItems);
 
-        const lineItems = createLineItems(
-            checkoutSessionRequest,
-            restaurant.menuItems
-        );
+        // Validate that line items are not empty
+        if (lineItems.length === 0) {
+            return res.status(400).json({ message: "No valid line items found" });
+        }
 
         const session = await createSession(
             lineItems,
-            // newOrder._id.toString(),
-            "TEST_ORDER_ID",
+            "TEST_ORDER_ID",  // Replace this with the actual order ID if needed
             restaurant.deliveryPrice,
             restaurant._id.toString()
         );
 
         if (!session.url) {
-            return res.status(500).json({ message: "Error creating stripe session" });
+            return res.status(500).json({ message: "Error creating Stripe session" });
         }
 
-        //await newOrder.save();
+        console.log("Stripe session created:", session);
         res.json({ url: session.url });
     } catch (error: any) {
-        console.log(error);
-        res.status(500).json({ message: error.raw.message });
+        console.error("Error creating checkout session:", error);
+        if (error.raw) {
+            console.error("Stripe error details:", error.raw);
+            return res.status(500).json({ message: error.raw.message });
+        } else {
+            return res.status(500).json({ message: error.message || "An unexpected error occurred" });
+        }
     }
 };
+
 
 const createLineItems = (
     checkoutSessionRequest: CheckoutSessionRequest,
     menuItems: MenuItemType[]
 ) => {
-    const lineItems = checkoutSessionRequest.cartItems.map((cartItem) => {
+    return checkoutSessionRequest.cartItems.map((cartItem) => {
         const menuItem = menuItems.find(
             (item) => item._id.toString() === cartItem.menuItemId.toString()
         );
@@ -81,22 +77,19 @@ const createLineItems = (
             throw new Error(`Menu item not found: ${cartItem.menuItemId}`);
         }
 
-        const line_item: Stripe.Checkout.SessionCreateParams.LineItem = {
+        return {
             price_data: {
                 currency: "inr",
-                unit_amount: menuItem.price,
                 product_data: {
                     name: menuItem.name,
                 },
+                unit_amount: menuItem.price * 100,
             },
-            quantity: parseInt(cartItem.quantity),
+            quantity: parseInt(cartItem.quantity, 10),
         };
-
-        return line_item;
     });
-
-    return lineItems;
 };
+
 
 const createSession = async (
     lineItems: Stripe.Checkout.SessionCreateParams.LineItem[],
@@ -112,7 +105,7 @@ const createSession = async (
                     display_name: "Delivery",
                     type: "fixed_amount",
                     fixed_amount: {
-                        amount: deliveryPrice,
+                        amount: deliveryPrice * 100,
                         currency: "inr",
                     },
                 },
