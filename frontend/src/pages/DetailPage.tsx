@@ -1,9 +1,12 @@
+import { useCreateCheckoutSession } from "@/api/OrderApi";
 import { useGetRestaurant } from "@/api/RestaurantApi";
+import CheckoutButton from "@/components/CheckoutButton";
 import MenuItems from "@/components/MenuItem";
 import OrderSummary from "@/components/OrderSummary";
 import RestaurantInfo from "@/components/RestaurantInfo";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardFooter } from "@/components/ui/card";
+import { UserFormData } from "@/forms/user-profile-form";
 import { MenuItem } from "@/types";
 import { useState } from "react";
 import { useParams } from "react-router-dom"
@@ -18,12 +21,13 @@ export type CartItem = {
 function DetailPage() {
     const { restaurantId } = useParams();
     const { restaurant, isLoading } = useGetRestaurant(restaurantId);
+    const { createCheckoutSession, isLoading: isCheckoutLoading } =
+    useCreateCheckoutSession();
 
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-    if (isLoading || !restaurant) {
-        return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Loading...</span>;
-    }
+    const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+        const storedCartItems = sessionStorage.getItem(`cartItems-${restaurantId}`);
+        return storedCartItems ? JSON.parse(storedCartItems) : [];
+    });
 
     const addToCart = (menuItem: MenuItem) => {
         setCartItems((prevCartItems) => {
@@ -48,6 +52,10 @@ function DetailPage() {
                     },
                 ];
             }
+            sessionStorage.setItem(
+                `cartItems-${restaurantId}`,
+                JSON.stringify(updatedCartItems)
+            );
             return updatedCartItems;
         })
     }
@@ -58,22 +66,59 @@ function DetailPage() {
                 (item) => cartItem._id !== item._id
             );
 
-            // sessionStorage.setItem(
-            //     `cartItems-${restaurantId}`,
-            //     JSON.stringify(updatedCartItems)
-            // );
+            sessionStorage.setItem(
+                `cartItems-${restaurantId}`,
+                JSON.stringify(updatedCartItems)
+            );
 
             return updatedCartItems;
         });
     }
 
     const updateCartItemQuantity = (cartItem: CartItem, newQuantity: number) => {
-        setCartItems((prevCartItems) =>
-            prevCartItems.map((item) =>
+        setCartItems((prevCartItems) => {
+            const updatedCartItems = prevCartItems.map((item) =>
                 item._id === cartItem._id ? { ...item, quantity: newQuantity } : item
-            )
-        );
+            );
+
+            // Update the session storage after modifying the cart item quantity
+            sessionStorage.setItem(
+                `cartItems-${restaurantId}`,
+                JSON.stringify(updatedCartItems)
+            );
+
+            return updatedCartItems;
+        });
     };
+
+    const onCheckout = async (userFormData: UserFormData) => {
+        if (!restaurant) {
+            return;
+        }
+
+        const checkoutData = {
+            cartItems: cartItems.map((cartItem) => ({
+                menuItemId: cartItem._id,
+                name: cartItem.name,
+                quantity: cartItem.quantity.toString(),
+            })),
+            restaurantId: restaurant._id,
+            deliveryDetails: {
+                name: userFormData.name,
+                addressLine1: userFormData.addressLine1,
+                city: userFormData.city,
+                country: userFormData.country,
+                email: userFormData.email as string,
+            },
+        };
+
+        const data = await createCheckoutSession(checkoutData);
+        window.location.href = data.url;
+    };
+
+    if (isLoading || !restaurant) {
+        return <span className="w-full h-[100%] flex items-center justify-center font-bold text-2xl">Loading...</span>;
+    }
 
     return (
         <div className="flex flex-col gap-10 lg:mx-10">
@@ -105,14 +150,12 @@ function DetailPage() {
                             removeFromCart={removeFromCart}
                             updateCartItemQuantity={updateCartItemQuantity}
                         />
-                        Order Summary
                         <CardFooter>
-                            {/* <CheckoutButton
+                            <CheckoutButton
                                 disabled={cartItems.length === 0}
                                 onCheckout={onCheckout}
                                 isLoading={isCheckoutLoading}
-                            /> */}/
-                            Checkout Button
+                            />
                         </CardFooter>
                     </Card>
                 </div>

@@ -17,7 +17,7 @@ import { User } from "@/types";
 import { useEffect } from "react";
 
 const formSchema = z.object({
-    auth0Id: z.string().optional(), // Ensure auth0Id is required
+    auth0Id: z.string().optional(),
     email: z.string().optional(),
     name: z.string().min(1, "Name is required"),
     addressLine1: z.string().min(1, "Address Line 1 is required"),
@@ -31,7 +31,6 @@ type Props = {
     currentUser: User;
     onSave: (userProfileData: UserFormData) => void;
     isLoading: boolean;
-    auth0Id: string; // Accept auth0Id as a prop
     title?: string;
     buttonText?: string;
 };
@@ -39,7 +38,6 @@ type Props = {
 const UserProfileForm = ({
     onSave,
     isLoading,
-    auth0Id, // Destructure auth0Id
     currentUser,
     title = "User Profile",
     buttonText = "Update",

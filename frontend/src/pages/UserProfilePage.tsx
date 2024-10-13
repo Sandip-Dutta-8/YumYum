@@ -29,7 +29,6 @@ const UserProfilePage = () => {
   return (
     <UserProfileForm
       currentUser={currentUser}
-      auth0Id={auth0Id}
       onSave={updateUser}
       isLoading={isLoading}
     />
