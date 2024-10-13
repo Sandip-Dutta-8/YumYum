@@ -28,7 +28,7 @@ const createCheckoutSession = async (req: Request, res: Response) => {
 
         const restaurant = await Restaurant.findById(checkoutSessionRequest.restaurantId);
         if (!restaurant) {
-            console.log("Restaurant not found:", checkoutSessionRequest.restaurantId);
+            // console.log("Restaurant not found:", checkoutSessionRequest.restaurantId);
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
@@ -50,7 +50,7 @@ const createCheckoutSession = async (req: Request, res: Response) => {
             return res.status(500).json({ message: "Error creating Stripe session" });
         }
 
-        console.log("Stripe session created:", session);
+        // console.log("Stripe session created:", session);
         res.json({ url: session.url });
     } catch (error: any) {
         console.error("Error creating checkout session:", error);
@@ -97,6 +97,17 @@ const createSession = async (
     deliveryPrice: number,
     restaurantId: string
 ) => {
+    // Calculate the total cart amount
+    const totalCartAmountInPaise = lineItems.reduce((total, item) => {
+        return total + (item.price_data!.unit_amount! * item.quantity!);
+    }, 0);
+
+    // Apply free delivery if the total amount exceeds ₹399 (converted to paise)
+    const freeDeliveryThresholdInPaise = 399 * 100; // Convert ₹399 to paise (₹1 = 100 paise)
+    const applicableDeliveryPrice = totalCartAmountInPaise > freeDeliveryThresholdInPaise
+        ? 0 // Free delivery
+        : deliveryPrice * 100; // Charge delivery price in paise
+
     const sessionData = await STRIPE.checkout.sessions.create({
         line_items: lineItems,
         shipping_options: [
@@ -105,7 +116,7 @@ const createSession = async (
                     display_name: "Delivery",
                     type: "fixed_amount",
                     fixed_amount: {
-                        amount: deliveryPrice * 100,
+                        amount: applicableDeliveryPrice, // Set delivery price based on total amount
                         currency: "inr",
                     },
                 },
@@ -122,6 +133,7 @@ const createSession = async (
 
     return sessionData;
 };
+
 
 export default {
     createCheckoutSession
