@@ -24,7 +24,7 @@ const UserProfilePage = () => {
     return <span>User not authenticated</span>;
   }
 
-  const auth0Id = user.sub as string;
+  //const auth0Id = user.sub as string;
 
   return (
     <UserProfileForm
