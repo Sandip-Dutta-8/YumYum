@@ -28,9 +28,17 @@ const createCheckoutSession = async (req: Request, res: Response) => {
 
         const restaurant = await Restaurant.findById(checkoutSessionRequest.restaurantId);
         if (!restaurant) {
-            // console.log("Restaurant not found:", checkoutSessionRequest.restaurantId);
             return res.status(404).json({ message: "Restaurant not found" });
         }
+
+        const newOrder = new Order({
+            restaurant: restaurant,
+            user: req.userId,
+            status: "placed",
+            deliveryDetails: checkoutSessionRequest.deliveryDetails,
+            cartItems: checkoutSessionRequest.cartItems,
+            createdAt: new Date(),
+        })
 
         const lineItems = createLineItems(checkoutSessionRequest, restaurant.menuItems);
 
@@ -41,16 +49,26 @@ const createCheckoutSession = async (req: Request, res: Response) => {
 
         const session = await createSession(
             lineItems,
-            "TEST_ORDER_ID",  // Replace this with the actual order ID if needed
+            newOrder._id.toString(),
             restaurant.deliveryPrice,
-            restaurant._id.toString()
+            restaurant._id.toString(),
+            {
+                email: checkoutSessionRequest.deliveryDetails.email,
+                name: checkoutSessionRequest.deliveryDetails.name,
+                addressLine1: checkoutSessionRequest.deliveryDetails.addressLine1,
+                city: checkoutSessionRequest.deliveryDetails.city,
+                postalCode: "123456", // Provide postal code
+                state: "WB",         // Provide state
+                country: "IN"        // Country code for India
+            }
         );
 
         if (!session.url) {
             return res.status(500).json({ message: "Error creating Stripe session" });
         }
 
-        // console.log("Stripe session created:", session);
+        await newOrder.save();
+
         res.json({ url: session.url });
     } catch (error: any) {
         console.error("Error creating checkout session:", error);
@@ -95,8 +113,32 @@ const createSession = async (
     lineItems: Stripe.Checkout.SessionCreateParams.LineItem[],
     orderId: string,
     deliveryPrice: number,
-    restaurantId: string
+    restaurantId: string,
+    deliveryDetails: {
+        email: string;
+        name: string;
+        addressLine1: string;
+        city: string;
+        postalCode: string;
+        state: string;
+        country: string;
+    }
 ) => {
+    // Create a customer first to add shipping details
+    const customer = await STRIPE.customers.create({
+        email: deliveryDetails.email,
+        shipping: {
+            name: deliveryDetails.name,
+            address: {
+                line1: deliveryDetails.addressLine1,
+                city: deliveryDetails.city,
+                postal_code: deliveryDetails.postalCode,
+                state: deliveryDetails.state,
+                country: deliveryDetails.country,  // E.g., "IN" for India
+            },
+        },
+    });
+
     // Calculate the total cart amount
     const totalCartAmountInPaise = lineItems.reduce((total, item) => {
         return total + (item.price_data!.unit_amount! * item.quantity!);
@@ -110,6 +152,7 @@ const createSession = async (
 
     const sessionData = await STRIPE.checkout.sessions.create({
         line_items: lineItems,
+        customer: customer.id,  // Use the customer ID created above
         shipping_options: [
             {
                 shipping_rate_data: {
@@ -133,7 +176,6 @@ const createSession = async (
 
     return sessionData;
 };
-
 
 export default {
     createCheckoutSession
